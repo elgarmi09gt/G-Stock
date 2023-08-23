@@ -83,7 +83,6 @@
                 <label for="">PRIX(CFA) </label>
                 <input type="val" class="form-control" id="prix" disabled>
             </div>
-
           </div>
       </div>
   </div>

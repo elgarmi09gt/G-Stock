@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProduitRequest;
 use App\Models\Produit;
-use Doctrine\DBAL\Schema\View;
 use Illuminate\Http\Request;
 
 class ProduitController extends Controller
@@ -14,22 +13,12 @@ class ProduitController extends Controller
      */
     public function index()
     {
-       /* $produit = Produit::create([
-            'reference' => 'EC2',
-            'libelle' => 'Ecran C20',
-            'active' => 1
-        ]);
-        dd($produit);
-        $produit->reference='EIPH11';
-        $produit->libelle='Ecran Iphone 11';
-        //$produit->active=1;
-        $produit->save();
-        return $produit;*/
-        $produits = Produit::all();
+
+        $produits = Produit::where('active', 1)->get();
+
         return view('produits\listProduits', [
             'produits' => $produits
         ]);
-
     }
 
     /**
@@ -63,7 +52,7 @@ class ProduitController extends Controller
      */
     public function edit(Produit $produit)
     {
-        //dd($produit);
+
         return view('produits\edit', ['produit' => $produit]);
     }
 
@@ -72,7 +61,9 @@ class ProduitController extends Controller
      */
     public function update(ProduitRequest $request, Produit $produit)
     {
+
         $produit->update($request->validated());
+
         return redirect()->route('produit.index')->with('success', 'Produit modifié avec succee !');
     }
 
@@ -82,9 +73,9 @@ class ProduitController extends Controller
     public function destroy(Request $request)
     {
         $produit = Produit::find($request->get('id_produit'));
+
         $produit->delete();
-        //->route()->parameter('produit'));
-        /**/
+
         return redirect()->back()->with('success', 'Produit supprimé avec succee !');
     }
 }
