@@ -11,4 +11,16 @@ use Illuminate\Database\Eloquent\Model;
 class Sortie extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'vente_id',
+        'produit_id',
+        'prix',
+        'quantite'
+    ];
+
+    public function produit()
+    {
+        return $this->belongsTo(Produit::class);
+    }
 }

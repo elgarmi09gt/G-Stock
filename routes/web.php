@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\AccueilController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\VenteController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EntreeController;
+use App\Http\Controllers\AccueilController;
 use App\Http\Controllers\ProduitController;
 
 /*
@@ -17,7 +18,7 @@ use App\Http\Controllers\ProduitController;
 |
 */
 
-Route::get('/', [AccueilController::class,'index'])->name('index');
+Route::get('/', [AccueilController::class, 'index'])->name('index');
 
 Route::prefix('/produit')->controller(ProduitController::class)->name('produit.')->group(function () {
     Route::get('', 'index')->name('index');
@@ -41,4 +42,14 @@ Route::prefix('/entree')->controller(EntreeController::class)->name('entree.')->
     Route::delete('', 'destroy')->name('destroy');
     Route::get('/edit/{entree}', 'edit')->name('edit');
     Route::post('/edit/{entree}', 'update')->name('update');
+});
+
+Route::prefix('/vente')->controller(VenteController::class)->name('vente.')->group(function () {
+    Route::get('', 'index')->name('index');
+    Route::post('', 'store')->name('store');
+    Route::get('/{vente}', 'show')->name('show');
+    Route::post('/{vente}', 'addProduit')->name('sorties');
+    Route::delete('', 'destroy')->name('destroy');
+    Route::get('/edit/{vente}', 'edit')->name('edit');
+    Route::post('/edit/{vente}', 'update')->name('update');
 });

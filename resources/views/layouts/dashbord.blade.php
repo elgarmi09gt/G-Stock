@@ -110,7 +110,7 @@
                     </a>
                 </li>
                 <li class=" @if($segment == 'vente') active @endif">
-                    <a href="{{-- route('vente.index') --}}">
+                    <a href="{{ route('vente.index') }}">
                         <i class="pe-7s-cart"></i>
                         <p>VENTES</p>
                     </a>
@@ -289,6 +289,23 @@
                 },{
                     type: 'info',
                     timer: 4000
+                });
+
+            });
+        @endif
+
+        @if(Session::has('warning'))
+            $(document).ready(function(){
+
+                demo.initChartist();
+
+                $.notify({
+                    icon: 'pe-7s-warning',
+                    message: "{{Session::get('warning')}}"
+
+                },{
+                    type: 'warning',
+                    timer: 6000
                 });
 
             });

@@ -11,4 +11,16 @@ use Illuminate\Database\Eloquent\Model;
 class Vente extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'etat',
+        'mois',
+        'reference',
+        'client_id'
+    ];
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
 }

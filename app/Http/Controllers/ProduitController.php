@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProduitRequest;
+use App\Models\Entree;
+use App\Models\Sortie;
 use App\Models\Produit;
 use Illuminate\Http\Request;
+
+use App\Http\Requests\ProduitRequest;
+use App\Models\Vente;
+
+use function PHPUnit\Framework\isEmpty;
 
 class ProduitController extends Controller
 {
@@ -72,10 +78,27 @@ class ProduitController extends Controller
      */
     public function destroy(Request $request)
     {
-        $produit = Produit::find($request->get('id_produit'));
+        //verifier si le produit est en stock
+        $stock = Entree::where('produit_id', '=', $request->get('id_produit'))
+            ->where('quantite', '>', 1)->get();
+        if ($stock->isNotEmpty()) {
+            return redirect()->back()->with('warning', 'Produit en stock impossible de supprimer !');
+        } else {
+            $sortie = Sortie::where('produit_id', '=', $request->get('id_produit'))->get();
+            if ($sortie->isNotEmpty()) {
+                //desactiver le produit
+                $produit = Produit::find($request->get('id_produit'));
+                $produit->active = 0;
+                $produit->save();
 
-        $produit->delete();
+                return redirect()->back()->with('info', 'Produit mis à jour (déja vendu  impossible de supprimer) !');
+            } else {
+                //supprimer le produit
+                $produit = Produit::find($request->get('id_produit'));
+                $produit->delete();
 
-        return redirect()->back()->with('success', 'Produit supprimé avec succee !');
+                return redirect()->back()->with('success', 'Produit supprimé avec succee !');
+            }
+        }
     }
 }

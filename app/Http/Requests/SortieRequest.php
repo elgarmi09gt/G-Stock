@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class ProduitRequest extends FormRequest
+class SortieRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,16 +22,10 @@ class ProduitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reference' => ['required', 'min:3', Rule::unique('produits')->ignore($this->route()->parameter('produit'))],
-            'libelle' => ['required', 'min:8'],
-            'active' => ['required', 'integer']
+            'vente_id' => ['required', 'exists:ventes,id'],
+            'produit_id' => ['required', 'exists:produits,id'],
+            'prix' => ['required', 'numeric', 'digits_between:2,12'],
+            'quantite' => ['required', 'numeric', 'min:1', 'digits_between:1,6']
         ];
-    }
-
-    public function prepareForValidation()
-    {
-        $this->merge([
-            'active' => 1
-        ]);
     }
 }

@@ -14,9 +14,10 @@ return new class extends Migration
     {
         Schema::create('ventes', function (Blueprint $table) {
             $table->id();
-            $table->string('libelle');
+            $table->string('reference');
             $table->string('etat');
-            $table->foreignIdFor(Client::class)->constrained()->cascadeOnDelete();
+            $table->string('mois');
+            $table->foreignIdFor(Client::class)->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
