@@ -47,9 +47,11 @@ Route::prefix('/entree')->controller(EntreeController::class)->name('entree.')->
 Route::prefix('/vente')->controller(VenteController::class)->name('vente.')->group(function () {
     Route::get('', 'index')->name('index');
     Route::post('', 'store')->name('store');
+    Route::post('/{vente}/reglement', 'reglement')->name('reglement');
     Route::get('/{vente}', 'show')->name('show');
     Route::post('/{vente}', 'addProduit')->name('sorties');
     Route::delete('', 'destroy')->name('destroy');
+    Route::delete('/{vente}', 'supprimerEntree')->name('sortie.destroy');
     Route::get('/edit/{vente}', 'edit')->name('edit');
     Route::post('/edit/{vente}', 'update')->name('update');
 });

@@ -13,8 +13,9 @@
 <div class="row">
     <div class="col-md-4 col-sm-3">
     <a href="#"
-          class="show-modal-add btn btn-sm btn-primary" style="margin-left: 5%; box-shadow: 0px 0px 15px #95A5A6; background: #1D62F0; color: #fff;"><i class="fa fa-plus"></i>NOUVEAU VENTE</a>
+          class="show-modal-add btn btn-sm btn-primary" style="margin-left: 5%; box-shadow: 0px 0px 15px #95A5A6; background: #1D62F0; color: #fff;"><i class="fa fa-plus"></i>NOUVELLE VENTE</a>
     </div>
+
 </div>
 <br>
 <div class="card-body">
@@ -31,17 +32,17 @@
             <td class="text-center"> {{ $v->reference }}</td>
             <td class="text-center"> {{ $v->client?->prenoms.' '.$v->client?->nom.' '.$v->client?->telephone }}</td>
             <td class="text-center">
-                @if ($v->etat == 0) {{ 'Non payé' }} @else {{ 'Paiement en cours' }} @endif</td>
+                @if ($v->etat == 0) {{ 'Non payé' }} @elseif ($v->etat == 1) {{ 'Payé' }}@else {{ 'Paiement en cours' }} @endif</td>
             <td class="text-center">
-                <a href="#" class="show-modal btn btn-info btn-sm"
-                  data-id="{{$v->id}}" data-client="{{ $v->client?->prenoms.' '.$v->client?->nom.' '.$v->client?->telephone }}"
-                  data-reference="{{$v->reference}}"
-                  data-etat="@if ($v->etat == 0) {{ 'Non payé' }} @else {{ 'Paiement en cours' }} @endif">
-                    <i class="fa fa-eye"></i>
+                <a href="{{ route('vente.show',$v->id) }}" class="btn btn-success btn-sm" data-id="">
+                    <i class="fa fa-plus"></i>
                 </a>&nbsp;&nbsp;&nbsp;&nbsp;
 
-                <a href="{{ route('vente.edit',$v->id) }}" class="btn btn-warning btn-sm" data-id="">
-                    <i class="fa fa-pencil"></i>
+                <a href="#" class="show-modal btn btn-info btn-sm"
+                  data-id="{{$v->id}}" data-client="{{ $v->client?->prenoms.' '.$v->client?->nom.' '.$v->client?->telephone }}"
+                  data-reference="{{$v->reference}}" data-versement="{{ $v->reglement?->verse }}" data-restant="{{ $v->reglement?->restant }}"
+                  data-etat="@if ($v->etat == 0) {{ 'Non payé' }} @else {{ 'Paiement en cours' }} @endif">
+                    <i class="fa fa-eye"></i>
                 </a>&nbsp;&nbsp;&nbsp;&nbsp;
 
                 <a href="#" class="show-modal-del btn btn-danger btn-sm" data-id_vente1="{{$v->id}}">
@@ -83,6 +84,17 @@
             <div class="form-group">
                 <label for="">ETAT </label>
                 <input type="val" class="form-control" id="etat" disabled>
+            </div>
+            <h4>REGLEMENT</h4>
+
+            <div class="form-group">
+                <label for="">VERSEMENT </label>
+                <input type="val" class="form-control" id="versement" disabled>
+            </div>
+
+            <div class="form-group">
+                <label for="">RESTANT </label>
+                <input type="val" class="form-control" id="restant" disabled>
             </div>
 
           </div>
@@ -150,10 +162,10 @@
            <h4 class="modal-title text-center" style="color: #fff;"></h4>
          </div>
          <div class="modal-body">
-           <form class="text-center" action="{{ route('client.destroy') }}" method="post">
+           <form class="text-center" action="{{ route('vente.destroy') }}" method="post">
              <input type="hidden" name="_token" value="{{ csrf_token() }}">
              @method('delete')
-             <input type="hidden" name="id_client" type="val" id="id_client1">
+             <input type="hidden" name="id_vente" type="val" id="id_vente1">
              <button type="button" data-dismiss="modal" class="btn btn-success">Annuler</button>
              <input type="submit" class="btn btn-danger" value="Confimer">
            </form>
@@ -168,6 +180,8 @@ $(document).on('click', '.show-modal', function() {
   $('#showmodalF').modal('show');
   $('#reference').val($(this).data('reference'));
   $('#client').val($(this).data('client'));
+  $('#versement').val($(this).data('versement'));
+  $('#restant').val($(this).data('restant'));
   $('#etat').val($(this).data('etat'));
   $('.modal-title').text('Details Vente');
   $('.modal-header').css('background', '#1DC7EA');
@@ -182,7 +196,7 @@ $(document).on('click', '.show-modal-add', function() {
 $(document).on('click', '.show-modal-del', function() {
   $('#showmodalDel').modal('show');
   $('.modal-title').text('Etes-vous sûr de vouloir le supprimer définitivement ?');
-  $('#id_client1').val($(this).data('id_client1'));
+  $('#id_vente1').val($(this).data('id_vente1'));
   $('.modal-header').css('background', 'linear-gradient(90deg, #8E44AD, #3498db)');
 });
 

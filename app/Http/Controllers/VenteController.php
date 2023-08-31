@@ -8,9 +8,11 @@ use App\Models\Client;
 use App\Models\Entree;
 use App\Models\Sortie;
 use App\Models\Produit;
+use App\Models\Reglement;
 use Illuminate\Http\Request;
 use App\Http\Requests\VenteRequest;
 use App\Http\Requests\SortieRequest;
+use App\Http\Requests\ReglementRequest;
 
 class VenteController extends Controller
 {
@@ -26,11 +28,11 @@ class VenteController extends Controller
         $v->client_id = 1;
         $v->save();*/
 
-        $ventes = Vente::with('client')->get();
+        $ventes = Vente::with('client', 'reglement')->get();
         $clients = Client::all();
         return view('ventes.listVentes', [
             'ventes' => $ventes,
-            'clients' => $clients
+            'clients' => $clients,
         ]);
     }
 
@@ -70,7 +72,7 @@ class VenteController extends Controller
     {
         $client = '';
         $sorties = Sortie::where('vente_id', $vente->id)->with('produit')->get();
-        $produits = Produit::all();
+        $produits = Produit::where('active', 1)->get();
         if ($vente->client_id == null) {
             $client = null;
         } else {
@@ -105,9 +107,17 @@ class VenteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Vente $vente)
+    public function destroy(Request $request)
     {
-        //
+        $sortie = Sortie::where('vente_id', $request->get('id_vente'))->first();
+        if ($sortie) {
+            return redirect()->back()->with('warning', 'Cette vente contient des produits : Veuillez les supprimer en premier');
+        } else {
+            $vente = Vente::find($request->get('id_vente'));
+            $vente->delete();
+
+            return redirect()->back()->with('success', 'Vente supprimée avec succées');
+        }
     }
 
     /**add produit in vente */
@@ -142,15 +152,77 @@ class VenteController extends Controller
         } else {
             return redirect()->back()->with('warning', 'Stock épuisé ! ');
         }
-        dd(1);
+    }
 
+    public function supprimerEntree(Request $request)
+    {
+        $sortie = Sortie::where('id', $request->get('id_sortie'))->first();
+        if ($sortie) {
+            $entree = Entree::where('produit_id', $sortie->produit_id)->first();
+            $entree->quantite = $entree->quantite + $sortie->quantite;
+            $entree->save();
 
+            $sortie->delete();
 
-        /*if ($vente) {
+            return redirect()->back()->with('success', 'Produit supprimé avec succee !');
+        }
+    }
 
+    public function reglement(ReglementRequest $request)
+    {
+        $message = '';
+        $sms = '';
+        $vente = Vente::find($request->get('id_vente'));
+        $reglement = Reglement::where('vente_id', $request->get('id_vente'))->first();
+        if ($reglement) {
+            // update reglement
+            if ($request->get('mtrc') >= $reglement->restant) {
+                $reglement->verse = $reglement->verse + $reglement->restant;
+                $reglement->restant = 0;
+                $vente->etat = 1;
+                $message = 'Réglement entiérement effectué';
+                $sms = 'success';
+            } else {
 
-            } */
+                $reglement->verse = $reglement->verse + $request->get('mtrc');
+                $reglement->restant = $reglement->restant - $request->get('mtrc');
 
-        dd($request->validated());
+                $vente->etat = 2;
+
+                $message = 'Réglement partiellement effectué ! restant(' . $reglement->restant . ')';
+                $sms = 'info';
+            }
+
+            $reglement->save();
+
+            $vente->save();
+        } else {
+            //create new reglement
+            $reglement = new Reglement();
+            $reglement->vente_id = $request->get('id_vente');
+            if ($request->get('mtrc') >= $request->get('total')) {
+
+                $reglement->verse = $request->get('total');
+                $reglement->restant = 0;
+
+                $vente->etat = 1;
+
+                $message = 'Réglement entiérement effectué';
+                $sms = 'success';
+            } else {
+                $reglement->verse = $request->get('mtrc');
+                $reglement->restant = $request->get('total') - $request->get('mtrc');
+
+                $vente->etat = 2;
+
+                $message = 'Réglement partiellement effectué ! restant(' . $reglement->restant . ')';
+                $sms = 'info';
+            }
+            $reglement->save();
+
+            $vente->save();
+        }
+        return redirect()->back()->with($sms, $message . ' !');
+        dd($request);
     }
 }

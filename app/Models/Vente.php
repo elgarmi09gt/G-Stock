@@ -23,4 +23,9 @@ class Vente extends Model
     {
         return $this->belongsTo(Client::class);
     }
+
+    public function reglement()
+    {
+        return $this->hasOne(Reglement::class);
+    }
 }
