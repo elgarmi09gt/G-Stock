@@ -10,7 +10,7 @@ class Reglement extends Model
     use HasFactory;
 
     protected $fillable = [
-        'vente_id', 'verse', 'restant'
+        'vente_id', 'verse', 'restant', 'user_id'
     ];
 
     public function vente()

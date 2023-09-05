@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 
 class EntreeRequest extends FormRequest
@@ -24,7 +25,14 @@ class EntreeRequest extends FormRequest
         return [
             'produit_id' => ['required','exists:produits,id'],
             'prix' => ['required','numeric','digits_between:2,12'],
-            'quantite' => ['required','numeric','min:1','digits_between:1,6']
+            'quantite' => ['required','numeric','min:1','digits_between:1,6'],
+            'user_id' => ['required','exists:users,id'],
         ];
+    }
+
+    public function prepareForValidation(){
+        return $this->merge([
+            'user_id' => Auth::user()->id
+        ]);
     }
 }

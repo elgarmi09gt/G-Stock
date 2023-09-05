@@ -13,12 +13,11 @@ class Entree extends Model
     use HasFactory;
 
     protected $fillable = [
-        'produit_id',
-        'quantite',
-        'prix'
+        'produit_id', 'quantite', 'prix', 'user_id'
     ];
 
-    public function produit(){
+    public function produit()
+    {
         return $this->belongsTo(Produit::class);
     }
 }

@@ -60,6 +60,7 @@ class VenteController extends Controller
                 'mois' => $request->validated()['mois'],
                 'reference' => $request->validated()['reference'],
                 'client_id' =>  $request->get('client_id'),
+                'user_id' =>  $request->get('user_id'),
             ]);
         }
         return redirect()->route('vente.show', $vente);
@@ -200,6 +201,7 @@ class VenteController extends Controller
             //create new reglement
             $reglement = new Reglement();
             $reglement->vente_id = $request->get('id_vente');
+            $reglement->user_id = $request->get('user_id');
             if ($request->get('mtrc') >= $request->get('total')) {
 
                 $reglement->verse = $request->get('total');

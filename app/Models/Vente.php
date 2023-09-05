@@ -13,10 +13,7 @@ class Vente extends Model
     use HasFactory;
 
     protected $fillable = [
-        'etat',
-        'mois',
-        'reference',
-        'client_id'
+        'etat', 'mois', 'reference', 'client_id', 'user_id'
     ];
 
     public function client()

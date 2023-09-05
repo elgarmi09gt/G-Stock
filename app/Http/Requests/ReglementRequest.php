@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ReglementRequest extends FormRequest
@@ -23,6 +24,13 @@ class ReglementRequest extends FormRequest
     {
         return [
             'mtrc' => ['required', 'numeric', 'digits_between:1,12'],
+            'user_id' => ['required','exists:users,id'],
         ];
+    }
+
+    public function prepareForValidation(){
+        return $this->merge([
+            'user_id' => Auth::user()->id
+        ]);
     }
 }

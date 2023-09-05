@@ -13,10 +13,7 @@ class Sortie extends Model
     use HasFactory;
 
     protected $fillable = [
-        'vente_id',
-        'produit_id',
-        'prix',
-        'quantite'
+        'vente_id', 'produit_id', 'prix', 'quantite', 'user_id'
     ];
 
     public function produit()

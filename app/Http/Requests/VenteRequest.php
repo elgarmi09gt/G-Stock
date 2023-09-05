@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Vente;
 use Carbon\Carbon;
+use App\Models\Vente;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 
 class VenteRequest extends FormRequest
@@ -28,7 +29,8 @@ class VenteRequest extends FormRequest
             'reference' => ['required', 'min:3', Rule::unique('ventes')->ignore($this->route()->parameter('vente'))],
             //'client_id' => ['nullable', 'exists:clients,id', 'accepted:null'],
             'etat' => ['required', 'integer'],
-            'mois' => ['required', 'integer']
+            'mois' => ['required', 'integer'],
+            'user_id' => ['required', 'exists:users,id'],
         ];
     }
 
@@ -56,7 +58,8 @@ class VenteRequest extends FormRequest
         $this->merge([
             'etat' => 0,
             'mois' => Carbon::now()->month,
-            'reference' => $ref
+            'reference' => $ref,
+            'user_id' => Auth::user()->id
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ClientRequest extends FormRequest
@@ -25,7 +26,14 @@ class ClientRequest extends FormRequest
         return [
             'prenoms'=>['required'],
             'nom'=>['required'],
-            'telephone'=>['required','max:9','regex:/(7)[0-9]{8}/',Rule::unique('clients')->ignore($this->route()->parameter('client'))]
+            'telephone'=>['required','max:9','regex:/(7)[0-9]{8}/',Rule::unique('clients')->ignore($this->route()->parameter('client'))],
+            'user_id' => ['required','exists:users,id'],
         ];
+    }
+
+    public function prepareForValidation(){
+        return $this->merge([
+            'user_id' => Auth::user()->id
+        ]);
     }
 }//, 'min:9','max:9'

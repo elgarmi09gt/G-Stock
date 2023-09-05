@@ -12,5 +12,5 @@ class Produit extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['reference','libelle','active'];
+    protected $fillable = ['reference', 'libelle', 'active', 'user_id'];
 }
