@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
-use App\Models\UserRole;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -58,7 +59,7 @@ class UserController extends Controller
             'nom' => $request->nom,
             'prenom' => $request->prenom,
             'email' => $request->email,
-            'password' => bcrypt($request->password)
+            'password' => Hash::make($request->password)
         ]);
 
         $rle = Role::find(2);

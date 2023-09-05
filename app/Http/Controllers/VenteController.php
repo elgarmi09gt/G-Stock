@@ -126,24 +126,40 @@ class VenteController extends Controller
     {
         $entre = Entree::where('produit_id', $request->validated()['produit_id'])
             ->first();
+        $reglement  = Reglement::where('vente_id', $request->validated()['vente_id'])->first();
         if ($entre) {
             if (($entre->quantite - $request->validated()['quantite']) >= 0) {
-
+                //quantite demande disponible
                 $sortie = Sortie::where('produit_id', $request->validated()['produit_id'])
                     ->where('vente_id', $request->validated()['vente_id'])->first();
                 if ($sortie) {
+                    //produit déja ajouter dans cet vente mis a jour qte
                     $sortie->update([
                         'quantite' => $request->validated()['quantite'] + $sortie->quantite,
                     ]);
                     $entre->update([
                         'quantite' => $entre->quantite - $request->validated()['quantite'],
                     ]);
+                    //réglement à mettre a jour
+
+                    if ($reglement) {
+                        $reglement->update([
+                            'restant' => $request->validated()['quantite'] * $request->validated()['prix'] + $reglement->restant,
+                        ]);
+                    }
                     return redirect()->back()->with('info', 'Produit déja ajouté ! quantité mis a jour !');
                 } else {
                     Sortie::create($request->validated());
                     $entre->update([
                         'quantite' => $entre->quantite - $request->validated()['quantite'],
                     ]);
+                    //réglement à mettre a jour
+
+                    if ($reglement) {
+                        $reglement->update([
+                            'restant' => $request->validated()['quantite'] * $request->validated()['prix'] + $reglement->restant,
+                        ]);
+                    }
                     return redirect()->back()->with('success', 'Produit ajoute avec succee !');
                 }
             } else {
@@ -157,46 +173,74 @@ class VenteController extends Controller
 
     public function supprimerEntree(Request $request)
     {
+        $sms = 'success';
+        $message = 'Produit supprimé avec succee !';
+
         $sortie = Sortie::where('id', $request->get('id_sortie'))->first();
+
         if ($sortie) {
             $entree = Entree::where('produit_id', $sortie->produit_id)->first();
             $entree->quantite = $entree->quantite + $sortie->quantite;
             $entree->save();
+            $reglement = Reglement::where('vente_id', $request->route()->parameter('vente'))->first();
+            $vente = Vente::where('id', $request->route()->parameter('vente'))->first();
 
+            if ($reglement) {
+                $rs = $reglement->restant - $sortie->quantite * $sortie->prix;
+                if ($rs >= 0) {
+                    $reglement->restant -= $sortie->quantite * $sortie->prix;
+                } else {
+                    $reglement->restant = 0;
+                    $vente->etat = 1;
+                    $v = $reglement->verse + $rs;
+                    if ($v >= 0) {
+                        $reglement->verse += $rs;
+                    } else {
+                        $reglement->verse = 0;
+                        $vente->etat = 0;
+                    }
+                    if ($reglement->restant == 0 && $reglement->verse == 0) {
+                        $vente->etat = 0;
+                    }
+                    $sms = 'info';
+                    $message = 'Montant reçu supérieur ! Monnaie : ' . $rs * (-1);
+                }
+                $reglement->save();
+                $vente->save();
+            }
             $sortie->delete();
 
-            return redirect()->back()->with('success', 'Produit supprimé avec succee !');
+            return redirect()->back()->with($sms, $message);
         }
     }
 
     public function reglement(ReglementRequest $request)
     {
+        //dd($request->get('total') - $reglement->verse);
+        //dd($request->get('id_vente'));
         $message = '';
         $sms = '';
         $vente = Vente::find($request->get('id_vente'));
         $reglement = Reglement::where('vente_id', $request->get('id_vente'))->first();
         if ($reglement) {
             // update reglement
+            $reglement->restant = $request->get('total') - $reglement->verse;
             if ($request->get('mtrc') >= $reglement->restant) {
-                $reglement->verse = $reglement->verse + $reglement->restant;
+                $reglement->verse += $reglement->restant;
                 $reglement->restant = 0;
                 $vente->etat = 1;
                 $message = 'Réglement entiérement effectué';
                 $sms = 'success';
             } else {
 
-                $reglement->verse = $reglement->verse + $request->get('mtrc');
-                $reglement->restant = $reglement->restant - $request->get('mtrc');
+                $reglement->verse += $request->get('mtrc');
+                $reglement->restant -= $request->get('mtrc');
 
                 $vente->etat = 2;
 
                 $message = 'Réglement partiellement effectué ! restant(' . $reglement->restant . ')';
                 $sms = 'info';
             }
-
-            $reglement->save();
-
-            $vente->save();
         } else {
             //create new reglement
             $reglement = new Reglement();
@@ -209,7 +253,7 @@ class VenteController extends Controller
 
                 $vente->etat = 1;
 
-                $message = 'Réglement entiérement effectué';
+                $message = 'Réglement entiérement effectué ! Monnaie : ' . $request->get('mtrc') >= $request->get('total');
                 $sms = 'success';
             } else {
                 $reglement->verse = $request->get('mtrc');
@@ -220,10 +264,11 @@ class VenteController extends Controller
                 $message = 'Réglement partiellement effectué ! restant(' . $reglement->restant . ')';
                 $sms = 'info';
             }
-            $reglement->save();
-
-            $vente->save();
         }
+
+        $vente->save();
+        $reglement->save();
+
         return redirect()->back()->with($sms, $message . ' !');
         dd($request);
     }

@@ -191,7 +191,7 @@
                                     <ul class="dropdown-menu">
                                         {{-- <li><a href="{{-- route('profil.index') }}">Voir mon profil</a></li>
                                      <li><ahref="route('utilisateur.edit',Auth::user()->id) }}">Modifier mon profil</a></li> --}}
-                                        <li><a href="{{ route('profile.edit') }}"><i class="pe-7s-user"></i>Modifier mon
+                                        <li><a href="{{ route('profile.edit') }}">Modifier mon
                                                 profil</a></li>
                                         <li class="divider"></li>
                                         <li>
